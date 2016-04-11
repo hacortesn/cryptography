@@ -5,7 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
-          prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" onMouseEntered="controller.init(buttonViewFile, labelViewFile)">
+          prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" onMouseEntered="controller.init(buttonViewFile, labelViewFile, gridFiles)">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
@@ -63,7 +63,7 @@
             </rowConstraints>
             <children>
                 <Button fx:id="buttonViewFile" mnemonicParsing="false" text="Ver archivo" GridPane.columnIndex="1"/>
-                <Label fx:id="labelViewFile" prefHeight="17.0" prefWidth="140.0" text="" wrapText="true"/>
+                <Label fx:id="labelViewFile" prefHeight="17.0" prefWidth="300.0" text="" wrapText="true"/>
             </children>
         </GridPane>
     </children>
