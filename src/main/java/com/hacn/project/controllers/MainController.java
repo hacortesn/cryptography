@@ -1,5 +1,6 @@
 package com.hacn.project.controllers;
 
+import com.hacn.project.logic.Simetric3DES;
 import com.hacn.project.util.DesktopApi;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -74,14 +75,31 @@ public class MainController implements MessageListener {
             try {
                 labelInfo.setText("El archivo fue enviado");
                 MessageProperties props = MessagePropertiesBuilder.newInstance()
-                        .setHeader("file_name", file.getName())
+                        .setHeader("file_name", file.getName().replaceAll(" ", "-"))
                         .setHeader("ID", ID)
                         .build();
-                Message message = MessageBuilder.withBody(Files.readAllBytes(Paths.get(file.toURI())))
+                byte[] body = Files.readAllBytes(Paths.get(file.toURI()));
+
+                //System.out.println(new String(body));
+
+                long t1 = System.currentTimeMillis();
+
+                byte[] encode = Simetric3DES.encrypt(body);
+
+                long t2 = System.currentTimeMillis();
+                System.out.println("segundos despercidiados haciendo la codificación por 3des" + (t2 - t1) / 1000);
+                //System.out.println(new String(Simetric3DES.decrypt(encode)));
+
+                //System.out.println(new String(Simetric3DES.decrypt(body)));
+
+
+                Message message = MessageBuilder.withBody(encode)
                         .andProperties(props)
                         .build();
                 amqpTemplate.convertAndSend(message);
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         else {
@@ -92,18 +110,21 @@ public class MainController implements MessageListener {
 
     //@FXML
     public void listenFiles(byte[] bytes, String fileName) {
+
         FileOutputStream fileOutputStream = null;
+        byte[] bytesDecode;
         try {
+            bytesDecode = Simetric3DES.decrypt(bytes);
             if (!new File("files").exists()) {
                 new File("files").mkdir();
             }
-
-
             fileOutputStream = new FileOutputStream(PATH_FILES + fileName);
-            fileOutputStream.write(bytes);
+            fileOutputStream.write(bytesDecode);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             if (fileOutputStream != null)
@@ -195,6 +216,10 @@ public class MainController implements MessageListener {
         }
     }
 
+    @FXML
+    public void setCrypto(Object val) {
+        System.out.println(val);
+    }
     /*MenuItem cmItem2 = new MenuItem("Save Image");
     cmItem2.setOnAction(new EventHandler<ActionEvent>() {
         public void handle(ActionEvent e) {

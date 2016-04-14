@@ -27,7 +27,7 @@ public class App extends Application {
 
     public void start(Stage stage) throws Exception {
         AbstractApplicationContext ctx =
-                new ClassPathXmlApplicationContext("classpath:app.xml");
+                new ClassPathXmlApplicationContext("classpath:com/hacn/project/controllers/app.xml");
         SpringFxmlLoader loader = new SpringFxmlLoader(ctx);
 
         Parent root = (Parent) loader.load("main.fxml", MainController.class);

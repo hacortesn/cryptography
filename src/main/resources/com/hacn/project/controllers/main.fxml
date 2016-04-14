@@ -4,8 +4,10 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import java.lang.String?>
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
-          prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" onMouseEntered="controller.init(buttonViewFile, labelViewFile, gridFiles)">
+          prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+          onMouseEntered="controller.init(buttonViewFile, labelViewFile, gridFiles)">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
@@ -32,14 +34,17 @@
                 <VBox alignment="CENTER" prefHeight="133.0" prefWidth="136.0">
                     <children>
                         <Label text="Simétricos"/>
-                        <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="3DES"/>
+                        <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="3DES"
+                                     onAction="controller.setCrypto('3DES')"/>
                         <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="RadioButton"/>
                     </children>
                 </VBox>
                 <VBox alignment="CENTER" prefHeight="133.0" prefWidth="136.0">
                     <children>
                         <Label text="Asimétricos"/>
-                        <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="ECC" textAlignment="CENTER"/>
+                        <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="ECC"
+                                     onAction="controller.setCrypto('ECC')"
+                                     textAlignment="CENTER"/>
                         <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="RadioButton"/>
                     </children>
                 </VBox>

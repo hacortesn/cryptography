@@ -6,4 +6,9 @@ package com.hacn.project.logic;
 public interface Crypto {
 
 
+    byte[] encrypt(byte[] bytes) throws Exception;
+
+    byte[] decrypt(byte[] message) throws Exception;
+
+
 }

@@ -8,7 +8,7 @@
 
 
     <bean:component-scan base-package="com.hacn.project.controllers.*"/>
-    <rabbit:connection-factory id="connectionFactory" host="127.0.0.1" username="guest" password="guest"/>
+    <rabbit:connection-factory id="connectionFactory" host="192.168.1.103" username="admin" password="admin"/>
 
 
     <rabbit:admin connection-factory="connectionFactory"/>
