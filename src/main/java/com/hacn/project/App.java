@@ -3,9 +3,11 @@ package com.hacn.project;
 import com.hacn.project.controllers.MainController;
 import com.hacn.project.controllers.SpringFxmlLoader;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -38,6 +40,12 @@ public class App extends Application {
         stage.setScene(scene);
         stage.setTitle("Crypto");
         stage.show();
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                System.out.println("Stage is closing");
+                System.exit(0);
+            }
+        });
     }
 
 

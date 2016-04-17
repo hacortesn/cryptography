@@ -1,5 +1,7 @@
 package com.hacn.project.controllers;
 
+import com.hacn.project.logic.Crypto;
+import com.hacn.project.logic.ECCSignature;
 import com.hacn.project.logic.Simetric3DES;
 import com.hacn.project.util.DesktopApi;
 import javafx.application.Platform;
@@ -17,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -26,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by familia on 10/04/2016.
@@ -37,6 +39,10 @@ public class MainController implements MessageListener {
     RabbitTemplate amqpTemplate;
     File file;
     private final static String ID = new BigInteger(130, new SecureRandom()).toString(32);
+    private String cipher = "";
+
+    final static String TRIPLE_DES_CIPHER = "3DES";
+    final static String ECC_CIPHER = "ECC";
 
     GridPane gridPane;
     Button buttonViewFile;
@@ -46,6 +52,7 @@ public class MainController implements MessageListener {
 
     private Desktop desktop;
     private Label labelViewFile;
+    private long lasTimeDecrypt = 0;
 
 
     public MainController() {
@@ -71,23 +78,21 @@ public class MainController implements MessageListener {
     public void sendFile(Label labelInfo) {
         labelInfo.setText("");
 
-        if (file != null)
+        if (file != null && !cipher.equals(""))
             try {
-                labelInfo.setText("El archivo fue enviado");
                 MessageProperties props = MessagePropertiesBuilder.newInstance()
                         .setHeader("file_name", file.getName().replaceAll(" ", "-"))
                         .setHeader("ID", ID)
+                        .setHeader("CIPHER", cipher)
                         .build();
                 byte[] body = Files.readAllBytes(Paths.get(file.toURI()));
 
                 //System.out.println(new String(body));
 
-                long t1 = System.currentTimeMillis();
 
-                byte[] encode = Simetric3DES.encrypt(body);
-
-                long t2 = System.currentTimeMillis();
-                System.out.println("segundos despercidiados haciendo la codificación por 3des" + (t2 - t1) / 1000);
+                Crypto crypto = crypto(cipher);
+                byte[] encode = crypto.encrypt(body);
+                System.out.println("segundos despercidiados haciendo la codificación " + crypto.getTime() / 1000);
                 //System.out.println(new String(Simetric3DES.decrypt(encode)));
 
                 //System.out.println(new String(Simetric3DES.decrypt(body)));
@@ -97,43 +102,64 @@ public class MainController implements MessageListener {
                         .andProperties(props)
                         .build();
                 amqpTemplate.convertAndSend(message);
+                labelInfo.setText("El archivo:\ncifrado en " + crypto.getTime() + " milisegundos y  enviado ");
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         else {
-            labelInfo.setText("El archivo no puede ser nulo");
+            labelInfo.setText("El archivo no puede ser vacío y/o nose ha escogido un algoritmo");
         }
 
     }
 
     //@FXML
-    public void listenFiles(byte[] bytes, String fileName) {
+    public String listenFiles(byte[] bytes, String fileName, String cipher) {
 
-        FileOutputStream fileOutputStream = null;
+        FileOutputStream trueFile = null;
+        FileOutputStream receivedFile = null;
         byte[] bytesDecode;
+        byte[] clone = bytes.clone();
+        Random rnd = new Random();
+        int i = Math.abs(rnd.nextInt());
+        String trueFileName = PATH_FILES + cipher + "_" + i + fileName;
         try {
-            bytesDecode = Simetric3DES.decrypt(bytes);
-            if (!new File("files").exists()) {
-                new File("files").mkdir();
+
+            String receivedFileName = PATH_FILES + "received" + File.separator + cipher + "_" + i + fileName + "." + cipher;
+
+            if (!new File("files" + File.separator + "received").exists()) {
+                new File("files" + File.separator + "received").mkdirs();
             }
-            fileOutputStream = new FileOutputStream(PATH_FILES + fileName);
-            fileOutputStream.write(bytesDecode);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            receivedFile = new FileOutputStream(receivedFileName);
+            receivedFile.write(clone);
+
+            Crypto crypto = crypto(cipher);
+            bytesDecode = crypto.decrypt(bytes);
+            lasTimeDecrypt = crypto.getTime();
+            trueFile = new FileOutputStream(trueFileName);
+            trueFile.write(bytesDecode);
+
+
         } catch (Exception e) {
             e.printStackTrace();
+            trueFileName = "";
         } finally {
-            if (fileOutputStream != null)
+            if (trueFile != null)
                 try {
-                    fileOutputStream.close();
+                    trueFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            if (receivedFile != null)
+                try {
+                    receivedFile.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
         }
+        return trueFileName;
     }
 
     private void openFile(File file) {
@@ -148,7 +174,7 @@ public class MainController implements MessageListener {
     }
 
     @FXML
-    public void init(Button buttonViewFile, Label labelViewFile, GridPane gridPane) {
+    public void init(GridPane gridPane) {
         if (this.buttonViewFile == null)
             this.buttonViewFile = buttonViewFile;
 
@@ -160,6 +186,17 @@ public class MainController implements MessageListener {
             cleanGrid();
         }
 
+    }
+
+    private Crypto crypto(String cipher) throws Exception {
+        switch (cipher) {
+            case ECC_CIPHER:
+                return new ECCSignature();
+            case TRIPLE_DES_CIPHER:
+                return new Simetric3DES();
+
+        }
+        return null;
     }
 
     private void cleanGrid() {
@@ -180,31 +217,36 @@ public class MainController implements MessageListener {
     public void onMessage(final Message message) {
 
         String _ID = message.getMessageProperties().getHeaders().get("ID").toString();
+        String cipher = message.getMessageProperties().getHeaders().get("CIPHER").toString();
         if (!_ID.equals(ID)) {
             final String fileName = message.getMessageProperties().getHeaders().get("file_name").toString();
-            listenFiles(message.getBody(), fileName);
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
+            final String realName = listenFiles(message.getBody(), fileName, cipher);
+            if (!realName.equals(""))
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
 
-                    //int size = gridPane.getRowConstraints().size();
+                        //int size = gridPane.getRowConstraints().size();
 
-                    gridPane.addRow(sizeRows);
-                    gridPane.add(new Label("archivo: " + fileName), 0, sizeRows);
-                    Button node = new Button("Ver archivo");
-                    node.setOnAction(new EventHandler<ActionEvent>() {
-                        @Override
-                        public void handle(ActionEvent actionEvent) {
-                            openFile(new File(PATH_FILES + fileName));
+                        gridPane.addRow(sizeRows);
+                        Label node1 = new Label("descifrado:" + lasTimeDecrypt +
+                                "milisegundos \narchivo: " + realName);
+                        node1.setMinHeight(50);
+                        gridPane.add(node1, 0, sizeRows);
+                        Button node = new Button("Ver archivo");
+                        node.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent actionEvent) {
+                                openFile(new File(realName));
 
-                        }
-                    });
-                    gridPane.add(node, 1, sizeRows);
-                    sizeRows++;
-                    //labelViewFile.setText("archivo: " + fileName + "\n cripto : 3DES");
-                    //buttonViewFile.setText("ver archivo " + fileName);
-                }
-            });
+                            }
+                        });
+                        gridPane.add(node, 1, sizeRows);
+                        sizeRows++;
+                        //labelViewFile.setText("archivo: " + fileName + "\n cripto : 3DES");
+                        //buttonViewFile.setText("ver archivo " + fileName);
+                    }
+                });
 
             /*buttonViewFile.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
@@ -219,6 +261,7 @@ public class MainController implements MessageListener {
     @FXML
     public void setCrypto(Object val) {
         System.out.println(val);
+        cipher = val.toString();
     }
     /*MenuItem cmItem2 = new MenuItem("Save Image");
     cmItem2.setOnAction(new EventHandler<ActionEvent>() {

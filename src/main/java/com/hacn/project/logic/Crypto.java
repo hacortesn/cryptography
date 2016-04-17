@@ -10,5 +10,7 @@ public interface Crypto {
 
     byte[] decrypt(byte[] message) throws Exception;
 
+    long getTime();
+
 
 }

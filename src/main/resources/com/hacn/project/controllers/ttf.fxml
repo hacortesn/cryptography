@@ -42,7 +42,7 @@
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="2">
          <children>
             <Button mnemonicParsing="false" text="Enviar archivo" />
-            <Label prefHeight="17.0" prefWidth="298.0" />
+            <Label prefHeight="50.0" prefWidth="298.0" />
          </children>
       </VBox>
       <GridPane alignment="CENTER" GridPane.columnIndex="1" GridPane.rowSpan="3">

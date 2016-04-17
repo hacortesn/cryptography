@@ -7,7 +7,7 @@
 <?import java.lang.String?>
 <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
           prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-          onMouseEntered="controller.init(buttonViewFile, labelViewFile, gridFiles)">
+          onMouseEntered="controller.init(gridFiles)">
     <columnConstraints>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0"/>
@@ -22,7 +22,7 @@
             <children>
                 <Button mnemonicParsing="false" text="Seleccionar Archivo"
                         onAction="controller.fileChooser(labelFileName)"/>
-                <Label fx:id="labelFileName" prefHeight="17.0" prefWidth="278.0" text="Label" textAlignment="CENTER"/>
+                <Label fx:id="labelFileName" prefHeight="17.0" prefWidth="278.0" text="" textAlignment="CENTER"/>
             </children>
         </VBox>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" GridPane.rowIndex="1">
@@ -36,7 +36,6 @@
                         <Label text="Simétricos"/>
                         <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="3DES"
                                      onAction="controller.setCrypto('3DES')"/>
-                        <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="RadioButton"/>
                     </children>
                 </VBox>
                 <VBox alignment="CENTER" prefHeight="133.0" prefWidth="136.0">
@@ -45,7 +44,6 @@
                         <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="ECC"
                                      onAction="controller.setCrypto('ECC')"
                                      textAlignment="CENTER"/>
-                        <RadioButton toggleGroup="$cryptoRadioButtonGroup" mnemonicParsing="false" text="RadioButton"/>
                     </children>
                 </VBox>
             </children>
@@ -53,7 +51,7 @@
         <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" GridPane.rowIndex="2">
             <children>
                 <Button mnemonicParsing="false" text="Enviar archivo" onAction="controller.sendFile(labelInfo)"/>
-                <Label fx:id="labelInfo" prefHeight="17.0" prefWidth="298.0"/>
+                <Label fx:id="labelInfo" prefHeight="50.0" prefWidth="298.0"/>
             </children>
         </VBox>
         <GridPane alignment="CENTER" GridPane.columnIndex="1" GridPane.rowSpan="3" fx:id="gridFiles">
@@ -67,8 +65,6 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES"/>
             </rowConstraints>
             <children>
-                <Button fx:id="buttonViewFile" mnemonicParsing="false" text="Ver archivo" GridPane.columnIndex="1"/>
-                <Label fx:id="labelViewFile" prefHeight="17.0" prefWidth="300.0" text="" wrapText="true"/>
             </children>
         </GridPane>
     </children>
